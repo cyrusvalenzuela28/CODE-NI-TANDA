@@ -1,0 +1,2786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Student Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-bg-animate {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .scanner-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #10b981;
+            box-shadow: 0 0 20px #10b981, 0 0 40px #10b981;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .qr-code-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+        .input-group:focus-within i {
+            color: #667eea;
+        }
+        .input-with-icon {
+            padding-left: 45px;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .password-toggle:hover {
+            color: #667eea;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        .btn-secondary:hover::before {
+            left: 100%;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .student-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .admin-sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+        }
+        .upload-area {
+            border: 3px dashed #d1d5db;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f9fafb;
+        }
+        .upload-area:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: scale(1.02);
+        }
+        .upload-area.dragover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: scale(1.05);
+        }
+        .file-input {
+            display: none;
+        }
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: float 20s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+        }
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #9ca3af;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .divider span {
+            padding: 0 1rem;
+        }
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+        }
+        .nav-item {
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+        .status-badge {
+            transition: all 0.3s ease;
+        }
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Landing Page -->
+    <div id="landingPage" class="min-h-screen gradient-bg-animate flex items-center justify-center p-4 relative overflow-hidden">
+        <!-- Floating Shapes -->
+        <div class="floating-shape w-64 h-64 top-10 left-10" style="animation-delay: 0s;"></div>
+        <div class="floating-shape w-48 h-48 top-40 right-20" style="animation-delay: 5s;"></div>
+        <div class="floating-shape w-32 h-32 bottom-20 left-1/4" style="animation-delay: 10s;"></div>
+        <div class="floating-shape w-56 h-56 bottom-40 right-10" style="animation-delay: 15s;"></div>
+        
+        <div class="text-center text-white max-w-5xl mx-auto relative z-10">
+            <div class="mb-12 fade-in">
+                <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/30 shadow-2xl relative">
+                    <div class="pulse-ring bg-white/30"></div>
+                    <i class="fas fa-graduation-cap text-5xl relative z-10"></i>
+                </div>
+                <h1 class="text-6xl font-bold mb-4 drop-shadow-lg tracking-tight">SCHOOL ATTENDANCE</h1>
+                <p class="text-2xl opacity-90 font-light tracking-wide">Smart Attendance & Student Management System</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mt-16 fade-in" style="animation-delay: 0.2s">
+                <button onclick="showStudentAuth()" class="glass-effect p-10 rounded-3xl card-hover group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 border-2 border-white/30 relative">
+                        <div class="absolute inset-0 rounded-full border-2 border-white/50 animate-ping"></div>
+                        <i class="fas fa-user-graduate text-4xl relative z-10"></i>
+                    </div>
+                    <h2 class="text-3xl font-semibold mb-3">Student Portal</h2>
+                    <p class="text-base opacity-80 mb-6">Login or create account to access your attendance records</p>
+                    <span class="inline-flex items-center text-base font-medium group-hover:translate-x-2 transition-transform">
+                        Get Started <i class="fas fa-arrow-right ml-3 text-xl group-hover:animate-bounce"></i>
+                    </span>
+                </button>
+                
+                <button onclick="showTeacherAuth()" class="glass-effect p-10 rounded-3xl card-hover group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 border-2 border-white/30 relative">
+                        <div class="absolute inset-0 rounded-full border-2 border-white/50 animate-ping" style="animation-delay: 0.5s;"></div>
+                        <i class="fas fa-chalkboard-teacher text-4xl relative z-10"></i>
+                    </div>
+                    <h2 class="text-3xl font-semibold mb-3">Teacher Portal</h2>
+                    <p class="text-base opacity-80 mb-6">Manage students, take attendance, and generate reports</p>
+                    <span class="inline-flex items-center text-base font-medium group-hover:translate-x-2 transition-transform">
+                        Get Started <i class="fas fa-arrow-right ml-3 text-xl group-hover:animate-bounce"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Student Auth Page -->
+    <div id="studentAuthPage" class="hidden min-h-screen gradient-bg-animate flex items-center justify-center p-4 relative overflow-hidden">
+        <div class="floating-shape w-64 h-64 top-10 left-10"></div>
+        <div class="floating-shape w-48 h-48 bottom-20 right-20" style="animation-delay: 8s;"></div>
+        
+        <button onclick="showLanding()" class="absolute top-6 left-6 text-white/80 hover:text-white flex items-center gap-2 transition-all hover:scale-105 z-20 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 hover:bg-white/20">
+            <i class="fas fa-arrow-left"></i>
+            <span class="font-medium">Back to Home</span>
+        </button>
+
+        <div class="w-full max-w-md relative z-10">
+            <div class="auth-card rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-center text-white relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm shadow-lg">
+                        <i class="fas fa-user-graduate text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold">Student Portal</h2>
+                    <p class="text-sm opacity-80 mt-1">Access your attendance records</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b bg-gray-50">
+                    <button onclick="switchStudentTab('login')" id="studentLoginTab" class="flex-1 py-4 text-center tab-btn active text-gray-600 hover:text-indigo-600 transition-all font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                    </button>
+                    <button onclick="switchStudentTab('signup')" id="studentSignupTab" class="flex-1 py-4 text-center tab-btn text-gray-600 hover:text-indigo-600 transition-all font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </button>
+                </div>
+
+                <div class="p-8">
+                    <!-- Student Login Form -->
+                    <form id="studentLoginForm" onsubmit="handleStudentLogin(event)" class="slide-up">
+                        <div class="space-y-5">
+                            <div class="input-group">
+                                <i class="fas fa-id-card text-lg"></i>
+                                <input type="text" id="studentLoginId" required 
+                                       class="w-full px-4 py-4 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Student ID">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="studentLoginPassword" required 
+                                       class="w-full px-4 py-4 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Password">
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('studentLoginPassword', this)"></i>
+                            </div>
+                            
+                            <div class="flex items-center justify-between text-sm">
+                                <label class="flex items-center text-gray-600 cursor-pointer hover:text-indigo-600 transition-colors">
+                                    <input type="checkbox" id="studentRememberMe" class="mr-2 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="#" onclick="showForgotPassword('student')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors hover:underline">Forgot password?</a>
+                            </div>
+                            
+                            <button type="submit" id="studentLoginBtn" class="w-full btn-primary text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg shadow-lg">
+                                <span>Sign In</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-gray-500 text-sm">Don't have an account? 
+                                <button type="button" onclick="switchStudentTab('signup')" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors hover:underline">Create one now</button>
+                            </p>
+                        </div>
+                    </form>
+
+                    <!-- Student Sign Up Form -->
+                    <form id="studentSignupForm" onsubmit="handleStudentSignup(event)" class="hidden slide-up">
+                        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="input-group">
+                                <i class="fas fa-user text-lg"></i>
+                                <input type="text" id="studentSignupName" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Full Name">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-id-card text-lg"></i>
+                                <input type="text" id="studentSignupId" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Student ID (e.g., STU2024001)">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-envelope text-lg"></i>
+                                <input type="email" id="studentSignupEmail" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Email Address">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-book text-lg"></i>
+                                <select id="studentSignupCourse" required class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700 bg-white cursor-pointer">
+                                    <option value="">Select Course</option>
+                                    <option value="BS Computer Science">BS Computer Science</option>
+                                    <option value="BS Information Technology">BS Information Technology</option>
+                                    <option value="BS Information System">BS Information System</option>
+                                    <option value="BS Engineering">BS Engineering</option>
+                                    <option value="BS Business Administration">BS Business Administration</option>
+                                    <option value="BS Education">BS Education</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-calendar text-lg"></i>
+                                <select id="studentSignupYear" required class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700 bg-white cursor-pointer">
+                                    <option value="">Select Year Level</option>
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="studentSignupPassword" required minlength="6"
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Create Password">
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('studentSignupPassword', this)"></i>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="studentSignupConfirmPassword" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Confirm Password">
+                            </div>
+                            
+                            <div class="flex items-start gap-3 text-sm p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                                <input type="checkbox" id="studentTerms" required class="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                <label class="text-gray-600 text-xs leading-relaxed">I agree to the <a href="#" class="text-indigo-600 font-medium hover:underline">Terms of Service</a> and <a href="#" class="text-indigo-600 font-medium hover:underline">Privacy Policy</a></label>
+                            </div>
+
+                            <button type="submit" id="studentSignupBtn" class="w-full btn-primary text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg shadow-lg mt-2">
+                                <span>Create Account</span>
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <p class="text-gray-500 text-sm">Already have an account? 
+                                <button type="button" onclick="switchStudentTab('login')" class="text-indigo-600 hover:text-indigo-800 font-semibold transition-colors hover:underline">Sign in</button>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Teacher Auth Page -->
+    <div id="teacherAuthPage" class="hidden min-h-screen gradient-bg-animate flex items-center justify-center p-4 relative overflow-hidden">
+        <div class="floating-shape w-64 h-64 top-10 right-10" style="animation-delay: 3s;"></div>
+        <div class="floating-shape w-48 h-48 bottom-20 left-20" style="animation-delay: 12s;"></div>
+        
+        <button onclick="showLanding()" class="absolute top-6 left-6 text-white/80 hover:text-white flex items-center gap-2 transition-all hover:scale-105 z-20 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 hover:bg-white/20">
+            <i class="fas fa-arrow-left"></i>
+            <span class="font-medium">Back to Home</span>
+        </button>
+
+        <div class="w-full max-w-md relative z-10">
+            <div class="auth-card rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-center text-white relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm shadow-lg">
+                        <i class="fas fa-chalkboard-teacher text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold">Teacher Portal</h2>
+                    <p class="text-sm opacity-80 mt-1">Manage classes and attendance</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b bg-gray-50">
+                    <button onclick="switchTeacherTab('login')" id="teacherLoginTab" class="flex-1 py-4 text-center tab-btn active text-gray-600 hover:text-emerald-600 transition-all font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                    </button>
+                    <button onclick="switchTeacherTab('signup')" id="teacherSignupTab" class="flex-1 py-4 text-center tab-btn text-gray-600 hover:text-emerald-600 transition-all font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </button>
+                </div>
+
+                <div class="p-8">
+                    <!-- Teacher Login Form -->
+                    <form id="teacherLoginForm" onsubmit="handleTeacherLogin(event)" class="slide-up">
+                        <div class="space-y-5">
+                            <div class="input-group">
+                                <i class="fas fa-id-card text-lg"></i>
+                                <input type="text" id="teacherLoginId" required 
+                                       class="w-full px-4 py-4 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Teacher ID">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="teacherLoginPassword" required 
+                                       class="w-full px-4 py-4 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Password">
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('teacherLoginPassword', this)"></i>
+                            </div>
+                            
+                            <div class="flex items-center justify-between text-sm">
+                                <label class="flex items-center text-gray-600 cursor-pointer hover:text-emerald-600 transition-colors">
+                                    <input type="checkbox" id="teacherRememberMe" class="mr-2 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="#" onclick="showForgotPassword('teacher')" class="text-emerald-600 hover:text-emerald-800 font-medium transition-colors hover:underline">Forgot password?</a>
+                            </div>
+                            
+                            <button type="submit" id="teacherLoginBtn" class="w-full btn-secondary text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg shadow-lg">
+                                <span>Sign In</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-gray-500 text-sm">Don't have an account? 
+                                <button type="button" onclick="switchTeacherTab('signup')" class="text-emerald-600 hover:text-emerald-800 font-semibold transition-colors hover:underline">Create one now</button>
+                            </p>
+                        </div>
+                    </form>
+
+                    <!-- Teacher Sign Up Form -->
+                    <form id="teacherSignupForm" onsubmit="handleTeacherSignup(event)" class="hidden slide-up">
+                        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                            <div class="input-group">
+                                <i class="fas fa-user text-lg"></i>
+                                <input type="text" id="teacherSignupName" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Full Name">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-id-card text-lg"></i>
+                                <input type="text" id="teacherSignupId" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Teacher ID (e.g., TCH2024001)">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-envelope text-lg"></i>
+                                <input type="email" id="teacherSignupEmail" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Email Address">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-chalkboard text-lg"></i>
+                                <select id="teacherSignupSubject" required class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700 bg-white cursor-pointer">
+                                    <option value="">Select Subject Specialization</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Science">Science</option>
+                                    <option value="English">English</option>
+                                    <option value="History">History</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Data Structure and Algorithm">Data Structure and Algorithm</option>
+                                    <option value="Information System">Information System</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Education">Education</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="teacherSignupPassword" required minlength="6"
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Create Password">
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('teacherSignupPassword', this)"></i>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock text-lg"></i>
+                                <input type="password" id="teacherSignupConfirmPassword" required 
+                                       class="w-full px-4 py-3 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                                       placeholder="Confirm Password">
+                            </div>
+                            
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                                <p class="text-xs text-emerald-800 flex items-start gap-2">
+                                    <i class="fas fa-info-circle mt-0.5 text-emerald-600"></i>
+                                    <span>As a teacher, you can manage students, take attendance via camera or QR upload, and generate reports.</span>
+                                </p>
+                            </div>
+
+                            <div class="flex items-start gap-3 text-sm p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <input type="checkbox" id="teacherTerms" required class="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                                <label class="text-gray-600 text-xs leading-relaxed">I agree to the <a href="#" class="text-emerald-600 font-medium hover:underline">Terms of Service</a> and <a href="#" class="text-emerald-600 font-medium hover:underline">Privacy Policy</a></label>
+                            </div>
+
+                            <button type="submit" id="teacherSignupBtn" class="w-full btn-secondary text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg shadow-lg mt-2">
+                                <span>Create Account</span>
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <p class="text-gray-500 text-sm">Already have an account? 
+                                <button type="button" onclick="switchTeacherTab('login')" class="text-emerald-600 hover:text-emerald-800 font-semibold transition-colors hover:underline">Sign in</button>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full fade-in relative shadow-2xl">
+            <button onclick="closeForgotPassword()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-key text-3xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Reset Password</h2>
+                <p class="text-gray-500 text-sm mt-2">Enter your ID and we'll send you a reset link</p>
+            </div>
+
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="space-y-4">
+                    <div class="input-group">
+                        <i class="fas fa-id-card text-lg"></i>
+                        <input type="text" id="forgotId" required 
+                               class="w-full px-4 py-4 rounded-xl outline-none transition-all input-with-icon input-field text-gray-700" 
+                               placeholder="Enter your ID">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all text-lg hover:scale-[1.02]">
+                        <i class="fas fa-paper-plane mr-2"></i>Send Reset Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student QR Display Modal (After Signup) -->
+    <div id="studentQRDisplayModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full fade-in relative shadow-2xl text-center">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-emerald-600 rounded-t-3xl"></div>
+            
+            <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-bounce">
+                <i class="fas fa-check-circle text-4xl text-white"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h2>
+            <p class="text-gray-600 mb-6">Your QR code has been generated. Save this for attendance!</p>
+            
+            <div class="flex justify-center mb-6">
+                <div class="qr-code-container shadow-2xl border-4 border-green-100 relative rounded-xl p-6">
+                    <div id="signupQRCode"></div>
+                    <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-1 rounded-full font-medium shadow-lg">
+                        ID: <span id="signupQRId"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl p-4 mb-6 text-left space-y-2 border border-gray-100">
+                <p class="text-sm text-gray-700"><i class="fas fa-user mr-2 text-indigo-500"></i><strong>Name:</strong> <span id="signupQRName"></span></p>
+                <p class="text-sm text-gray-700"><i class="fas fa-book mr-2 text-indigo-500"></i><strong>Course:</strong> <span id="signupQRCourse"></span></p>
+                <p class="text-sm text-gray-700"><i class="fas fa-calendar mr-2 text-indigo-500"></i><strong>Year:</strong> <span id="signupQRYear"></span></p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="downloadSignupQR()" class="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 font-medium hover:scale-[1.02]">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button onclick="printSignupQR()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 font-medium hover:scale-[1.02]">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+            
+            <button onclick="closeSignupQR()" class="w-full mt-4 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors hover:underline">
+                Continue to Dashboard <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div id="studentDashboard" class="hidden min-h-screen bg-gray-50">
+        <nav class="bg-white shadow-sm border-b sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                            <i class="fas fa-graduation-cap text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-xl text-gray-800">My Portal</span>
+                            <span id="studentCourseBadge" class="text-xs text-gray-500 block"></span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="showMyQR()" class="text-indigo-600 hover:text-indigo-800 p-2 rounded-xl hover:bg-indigo-50 transition-all hover:scale-110" title="My QR Code">
+                            <i class="fas fa-qrcode text-xl"></i>
+                        </button>
+                        <button onclick="handleLogout()" class="logout-btn text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium shadow-md hover:shadow-lg">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Profile Card -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 card-hover">
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-28 relative">
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Ccircle cx=\"3\" cy=\"3\" r=\"3\"/%3E%3Ccircle cx=\"13\" cy=\"13\" r=\"3\"/%3E%3C/g%3E%3C/svg%3E')]"></div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <div class="relative -mt-12 mb-4 flex justify-center">
+                                <div class="w-24 h-24 rounded-full border-4 border-white shadow-xl student-avatar text-3xl flex items-center justify-center glow-effect">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h2 id="dashStudentName" class="text-xl font-bold text-gray-800"></h2>
+                                <p id="dashStudentId" class="text-gray-500 text-sm"></p>
+                                <span id="dashStudentCourse" class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 mt-3 shadow-sm"></span>
+                            </div>
+                            
+                            <div class="mt-6 space-y-3">
+                                <div class="flex justify-between text-sm py-3 border-b border-gray-100 hover:bg-gray-50 px-2 rounded-lg transition-colors">
+                                    <span class="text-gray-600"><i class="fas fa-calendar-alt mr-2 text-gray-400"></i>Year Level</span>
+                                    <span id="dashStudentYear" class="font-medium text-gray-800"></span>
+                                </div>
+                                <div class="flex justify-between text-sm py-3 border-b border-gray-100 hover:bg-gray-50 px-2 rounded-lg transition-colors">
+                                    <span class="text-gray-600"><i class="fas fa-envelope mr-2 text-gray-400"></i>Email</span>
+                                    <span id="dashStudentEmail" class="font-medium text-xs text-gray-700 truncate max-w-[150px]"></span>
+                                </div>
+                                <div class="flex justify-between text-sm py-3 hover:bg-gray-50 px-2 rounded-lg transition-colors">
+                                    <span class="text-gray-600"><i class="fas fa-chart-line mr-2 text-gray-400"></i>Attendance Rate</span>
+                                    <span id="dashAttendanceRate" class="font-bold text-green-600"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6 mt-6 border border-gray-100 card-hover">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-calendar-check text-indigo-500"></i> This Month
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200 status-badge cursor-pointer">
+                                <p class="text-3xl font-bold text-green-600" id="dashPresent">0</p>
+                                <p class="text-xs text-gray-600 font-medium mt-1">Present</p>
+                            </div>
+                            <div class="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl border border-red-200 status-badge cursor-pointer">
+                                <p class="text-3xl font-bold text-red-600" id="dashAbsent">0</p>
+                                <p class="text-xs text-gray-600 font-medium mt-1">Absent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Attendance History -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 card-hover">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-history text-indigo-500"></i>
+                            My Attendance History
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 rounded-xl">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 rounded-tl-xl">Date</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Subject</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 rounded-tr-xl">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentAttendanceTable">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noStudentAttendance" class="hidden text-center py-8 text-gray-400">
+                            <i class="fas fa-clipboard text-4xl mb-2 opacity-50"></i>
+                            <p>No attendance records yet</p>
+                        </div>
+                    </div>
+
+                    <!-- My QR Code Section -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6 text-center border border-gray-100 card-hover">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">My Attendance QR Code</h3>
+                        <p class="text-gray-500 text-sm mb-4">Show this to your teacher for attendance</p>
+                        <div class="flex justify-center mb-4">
+                            <div id="dashQRCode" class="qr-code-container shadow-xl rounded-xl border-4 border-indigo-100 p-4"></div>
+                        </div>
+                        <button onclick="downloadMyQR()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-medium hover:scale-[1.02]">
+                            <i class="fas fa-download mr-2"></i>Download QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My QR Code Modal -->
+    <div id="myQRModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full fade-in relative shadow-2xl text-center">
+            <button onclick="closeMyQR()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h3 class="text-xl font-bold text-gray-800 mb-4">My QR Code</h3>
+            <div class="flex justify-center mb-4">
+                <div id="modalQRCode" class="qr-code-container shadow-xl rounded-xl border-4 border-indigo-100 p-4"></div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">ID: <span id="modalQRId" class="font-mono font-bold text-indigo-600"></span></p>
+            <button onclick="downloadModalQR()" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-medium hover:scale-[1.02]">
+                <i class="fas fa-download mr-2"></i>Download
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin/Teacher Dashboard -->
+    <div id="adminDashboard" class="hidden min-h-screen bg-gray-100">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar fixed left-0 top-0 h-full w-64 text-white z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300" id="adminSidebar">
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-chalkboard-teacher text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">Teacher Panel</h3>
+                        <p class="text-xs text-gray-400" id="adminName">Teacher</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="p-4 space-y-2">
+                <button onclick="showAdminSection('dashboard')" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition-all text-left bg-gray-700" data-section="dashboard">
+                    <i class="fas fa-home w-5"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="showAdminSection('students')" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition-all text-left" data-section="students">
+                    <i class="fas fa-users w-5"></i>
+                    <span>All Students</span>
+                </button>
+                <button onclick="showAdminSection('attendance')" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition-all text-left" data-section="attendance">
+                    <i class="fas fa-clipboard-check w-5"></i>
+                    <span>Take Attendance</span>
+                </button>
+                <button onclick="showAdminSection('records')" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition-all text-left" data-section="records">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Records</span>
+                </button>
+            </nav>
+            
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+                <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition-all text-left group">
+                    <i class="fas fa-sign-out-alt w-5 group-hover:rotate-180 transition-transform"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar Toggle -->
+        <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-3 rounded-xl shadow-lg hover:bg-gray-700 transition-colors">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Admin Main Content -->
+        <main class="md:ml-64 min-h-screen p-8">
+            <!-- Dashboard Section -->
+            <div id="adminDashboardSection" class="admin-section">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card border border-gray-100 hover:shadow-lg transition-all card-hover cursor-pointer">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-users text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold text-gray-800" id="totalStudents">0</p>
+                        <p class="text-gray-500 text-sm mt-1">Total Students</p>
+                    </div>
+                    
+                    <div class="stat-card border border-gray-100 hover:shadow-lg transition-all card-hover cursor-pointer">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-check-circle text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold text-gray-800" id="todayPresent">0</p>
+                        <p class="text-gray-500 text-sm mt-1">Present Today</p>
+                    </div>
+                    
+                    <div class="stat-card border border-gray-100 hover:shadow-lg transition-all card-hover cursor-pointer">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-times-circle text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold text-gray-800" id="todayAbsent">0</p>
+                        <p class="text-gray-500 text-sm mt-1">Absent Today</p>
+                    </div>
+                    
+                    <div class="stat-card border border-gray-100 hover:shadow-lg transition-all card-hover cursor-pointer">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-book text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold text-gray-800" id="totalCourses">0</p>
+                        <p class="text-gray-500 text-sm mt-1">Courses</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-clock-rotate-left text-emerald-500"></i>
+                        Recent Attendance Activity
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 rounded-xl">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 rounded-tl-xl">Student</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Course</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Subject</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 rounded-tr-xl">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentActivityTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Section -->
+            <div id="adminStudentsSection" class="admin-section hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">Student Management</h1>
+                    <div class="flex gap-3">
+                        <button onclick="exportStudentList()" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-medium shadow-sm hover:shadow-md">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button onclick="showAddStudentModal()" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all font-medium shadow-md hover:scale-[1.02]">
+                            <i class="fas fa-plus mr-2"></i>Add Student
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+                    <div class="p-5 border-b border-gray-200 flex gap-4 flex-wrap">
+                        <div class="relative flex-1 max-w-md min-w-[200px]">
+                            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="text" id="adminSearchStudent" placeholder="Search students..." 
+                                   class="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                                   oninput="filterAdminStudents()">
+                        </div>
+                        <select id="filterCourse" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white transition-all cursor-pointer" onchange="filterAdminStudents()">
+                            <option value="">All Courses</option>
+                        </select>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Student</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Course</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Attendance</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminStudentsTable" class="divide-y divide-gray-100">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Section with QR Upload -->
+            <div id="adminAttendanceSection" class="admin-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">Take Attendance</h1>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- QR Scanner -->
+                    <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 card-hover">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-camera text-emerald-500"></i>
+                            Scan Student QR (Camera)
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <select id="attendanceSubject" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none mb-4 bg-white transition-all cursor-pointer">
+                                <option value="">Select Subject</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Science">Science</option>
+                                <option value="English">English</option>
+                                <option value="History">History</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Data Structure and Algorithm">Data Structure and Algorithm</option>
+                                <option value="Information System">Information System</option>
+                            </select>
+                        </div>
+
+                        <div class="scanner-container bg-black rounded-2xl overflow-hidden relative shadow-2xl" style="min-height: 350px;">
+                            <div id="adminReader"></div>
+                            <div class="scanner-line" id="adminScannerLine" style="display: none;"></div>
+                            <div id="adminScannerPlaceholder" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+                                <div class="text-center p-6">
+                                    <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                                        <i class="fas fa-camera text-3xl opacity-70"></i>
+                                    </div>
+                                    <p class="text-sm text-gray-400 mb-4">Camera is inactive</p>
+                                    <button onclick="startAdminScanner()" class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl hover:shadow-lg transition-all font-medium shadow-lg hover:scale-[1.02]">
+                                        <i class="fas fa-play mr-2"></i>Start Scanner
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Upload for Teachers -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-cloud-upload-alt text-blue-500"></i>
+                                Upload QR Code Image
+                            </h3>
+                            <p class="text-gray-500 text-sm mb-4">Upload a student's QR code image to mark attendance</p>
+                            
+                            <div class="upload-area" id="teacherUploadArea" onclick="document.getElementById('teacherQRFileInput').click()">
+                                <input type="file" id="teacherQRFileInput" class="file-input" accept="image/*" onchange="handleTeacherQRUpload(event)">
+                                <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-600"></i>
+                                </div>
+                                <p class="text-gray-700 font-semibold mb-2 text-lg">Click to upload QR code</p>
+                                <p class="text-gray-400 text-sm">or drag and drop image here</p>
+                                <p class="text-gray-400 text-xs mt-2">Supports: JPG, PNG, GIF, WebP</p>
+                            </div>
+
+                            <div id="teacherUploadPreview" class="hidden mt-4 text-center">
+                                <img id="teacherUploadedImage" class="max-w-xs mx-auto rounded-xl shadow-lg mb-4 border-4 border-blue-100" alt="Uploaded QR">
+                                <div id="teacherUploadStatus" class="text-sm font-medium"></div>
+                            </div>
+                        </div>
+
+                        <!-- Scan Results -->
+                        <div id="adminScanResult" class="hidden bg-white rounded-3xl shadow-xl p-6 border-2 border-emerald-200">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-16 h-16 rounded-full student-avatar text-2xl flex-shrink-0 flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div>
+                                    <h3 id="adminScannedName" class="text-xl font-bold text-gray-800"></h3>
+                                    <p id="adminScannedId" class="text-gray-500"></p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button onclick="markScannedStatus('Present')" class="py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all text-sm font-medium shadow-md hover:scale-[1.02]">
+                                    <i class="fas fa-check mr-1"></i>Present
+                                </button>
+                                <button onclick="markScannedStatus('Late')" class="py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl hover:shadow-lg transition-all text-sm font-medium shadow-md hover:scale-[1.02]">
+                                    <i class="fas fa-clock mr-1"></i>Late
+                                </button>
+                                <button onclick="markScannedStatus('Absent')" class="py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all text-sm font-medium shadow-md hover:scale-[1.02]">
+                                    <i class="fas fa-times mr-1"></i>Absent
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Attendance -->
+                        <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100 card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-list-check text-gray-500"></i>
+                                Manual Attendance
+                            </h3>
+                            <div class="space-y-3 max-h-64 overflow-y-auto pr-2" id="manualAttendanceList">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Records Section -->
+            <div id="adminRecordsSection" class="admin-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">Attendance Records</h1>
+                
+                <div class="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-gray-100 card-hover">
+                    <div class="flex gap-4 mb-6 flex-wrap">
+                        <input type="date" id="recordDate" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer">
+                        <select id="recordCourse" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white transition-all cursor-pointer">
+                            <option value="">All Courses</option>
+                        </select>
+                        <button onclick="filterRecords()" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all font-medium shadow-md hover:scale-[1.02]">
+                            <i class="fas fa-filter mr-2"></i>Filter
+                        </button>
+                        <button onclick="exportRecords()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-medium hover:scale-[1.02]">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 rounded-xl">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase rounded-tl-xl">Date</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Student</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Subject</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase rounded-tr-xl">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTable" class="divide-y divide-gray-100">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full fade-in relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAddStudent()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Add New Student</h2>
+            <p class="text-gray-500 text-sm mb-6">Create a new student account</p>
+            
+            <form id="addStudentForm" onsubmit="handleAddStudent(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="addName" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                        <input type="text" id="addId" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="addEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                        <select id="addCourse" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white transition-all cursor-pointer">
+                            <option value="">Select Course</option>
+                            <option value="BS Computer Science">BS Computer Science</option>
+                            <option value="BS Information Technology">BS Information Technology</option>
+                            <option value="BS Information System">BS Information System</option>
+                            <option value="BS Engineering">BS Engineering</option>
+                            <option value="BS Business Administration">BS Business Administration</option>
+                            <option value="BS Education">BS Education</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <select id="addYear" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white transition-all cursor-pointer">
+                            <option value="">Select Year</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="addPassword" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all text-lg shadow-md mt-2 hover:scale-[1.02]">
+                        <i class="fas fa-plus-circle mr-2"></i>Add Student & Generate QR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full fade-in relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button onclick="closeEditStudent()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all hover:rotate-90">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Edit Student</h2>
+            <p class="text-gray-500 text-sm mb-6">Update student information</p>
+            
+            <form id="editStudentForm" onsubmit="handleEditStudent(event)">
+                <input type="hidden" id="editOriginalId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="editName" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                        <input type="text" id="editId" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="editEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                        <select id="editCourse" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all cursor-pointer">
+                            <option value="BS Computer Science">BS Computer Science</option>
+                            <option value="BS Information Technology">BS Information Technology</option>
+                            <option value="BS Information System">BS Information System</option>
+                            <option value="BS Engineering">BS Engineering</option>
+                            <option value="BS Business Administration">BS Business Administration</option>
+                            <option value="BS Education">BS Education</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year Level</label>
+                        <select id="editYear" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all cursor-pointer">
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeEditStudent()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-medium hover:scale-[1.02]">
+                            Cancel
+                        </button>
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all font-medium shadow-md hover:scale-[1.02]">
+                            <i class="fas fa-save mr-2"></i>Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Student Modal (Admin) -->
+    <div id="viewStudentAdminModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-lg w-full fade-in shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-28 relative rounded-t-3xl">
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Ccircle cx=\"3\" cy=\"3\" r=\"3\"/%3E%3Ccircle cx=\"13\" cy=\"13\" r=\"3\"/%3E%3C/g%3E%3C/svg%3E')]"></div>
+                <button onclick="closeViewStudentAdmin()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all hover:rotate-90">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="px-6 pb-6 -mt-12">
+                <div class="flex items-end justify-between">
+                    <div class="w-24 h-24 rounded-full border-4 border-white shadow-xl student-avatar text-4xl flex items-center justify-center flex-shrink-0 glow-effect">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="mb-4">
+                        <button onclick="printStudentID()" class="px-4 py-2 bg-white shadow-lg rounded-xl text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium border border-gray-100 hover:scale-[1.02]">
+                            <i class="fas fa-id-card mr-2"></i>Print ID
+                        </button>
+                    </div>
+                </div>
+                
+                <h2 id="viewAdminStudentName" class="text-2xl font-bold text-gray-800 mt-4"></h2>
+                <p id="viewAdminStudentId" class="text-gray-500"></p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                        <p class="text-sm text-gray-600 mb-1">Course</p>
+                        <p id="viewAdminStudentCourse" class="font-semibold text-gray-800"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                        <p class="text-sm text-gray-600 mb-1">Year</p>
+                        <p id="viewAdminStudentYear" class="font-semibold text-gray-800"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                        <p class="text-sm text-gray-600 mb-1">Email</p>
+                        <p id="viewAdminStudentEmail" class="font-semibold text-gray-800 text-sm truncate"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                        <p class="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                        <p id="viewAdminStudentRate" class="font-semibold text-emerald-600"></p>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <i class="fas fa-qrcode text-emerald-500"></i>Student QR Code
+                    </h3>
+                    <div class="flex justify-center p-6 bg-gray-50 rounded-xl border border-gray-100">
+                        <div id="viewAdminStudentQR" class="bg-white p-4 rounded-xl shadow-lg"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 transition-transform duration-300 z-50 flex items-center gap-4 max-w-sm border border-gray-700">
+        <div id="toastIconContainer" class="w-12 h-12 rounded-full flex items-center justify-center bg-green-500/20 flex-shrink-0">
+            <i id="toastIcon" class="fas fa-check-circle text-green-400 text-xl"></i>
+        </div>
+        <div>
+            <p id="toastTitle" class="font-bold text-sm">Success!</p>
+            <p id="toastMessage" class="text-sm text-gray-300">Operation completed successfully</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Data Storage
+        let currentUser = null;
+        let currentRole = null;
+        let tempStudentData = null;
+        let adminScanner = null;
+        let lastScannedStudent = null;
+        
+        // Data
+        let students = JSON.parse(localStorage.getItem('edutrack_students')) || [];
+        let teachers = JSON.parse(localStorage.getItem('edutrack_teachers')) || [];
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('edutrack_students', JSON.stringify(students));
+            localStorage.setItem('edutrack_teachers', JSON.stringify(teachers));
+        }
+
+        // Navigation
+        function showLanding() {
+            hideAll();
+            document.getElementById('landingPage').classList.remove('hidden');
+        }
+
+        function hideAll() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('studentAuthPage').classList.add('hidden');
+            document.getElementById('teacherAuthPage').classList.add('hidden');
+            document.getElementById('studentDashboard').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+            document.getElementById('studentQRDisplayModal').classList.add('hidden');
+            document.getElementById('myQRModal').classList.add('hidden');
+            document.getElementById('addStudentModal').classList.add('hidden');
+            document.getElementById('editStudentModal').classList.add('hidden');
+            document.getElementById('viewStudentAdminModal').classList.add('hidden');
+        }
+
+        // Password Toggle
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Student Auth Functions
+        function showStudentAuth() {
+            hideAll();
+            document.getElementById('studentAuthPage').classList.remove('hidden');
+            switchStudentTab('login');
+        }
+
+        function switchStudentTab(tab) {
+            const loginForm = document.getElementById('studentLoginForm');
+            const signupForm = document.getElementById('studentSignupForm');
+            const loginTab = document.getElementById('studentLoginTab');
+            const signupTab = document.getElementById('studentSignupTab');
+            
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                loginTab.classList.remove('active');
+                signupTab.classList.add('active');
+            }
+        }
+
+        function handleStudentLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('studentLoginId').value;
+            const password = document.getElementById('studentLoginPassword').value;
+            
+            const btn = document.getElementById('studentLoginBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const student = students.find(s => s.id === id && s.password === password);
+                
+                if (student) {
+                    currentUser = student;
+                    currentRole = 'student';
+                    
+                    if (document.getElementById('studentRememberMe').checked) {
+                        localStorage.setItem('edutrack_remember_student', id);
+                    }
+                    
+                    showStudentDashboard();
+                    showToast('Welcome back, ' + student.name + '!', 'success');
+                } else {
+                    showToast('Invalid ID or password!', 'error');
+                    btn.classList.add('shake');
+                    setTimeout(() => btn.classList.remove('shake'), 500);
+                }
+                
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }, 800);
+        }
+
+        function handleStudentSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('studentSignupName').value;
+            const id = document.getElementById('studentSignupId').value;
+            const email = document.getElementById('studentSignupEmail').value;
+            const course = document.getElementById('studentSignupCourse').value;
+            const year = document.getElementById('studentSignupYear').value;
+            const password = document.getElementById('studentSignupPassword').value;
+            const confirmPassword = document.getElementById('studentSignupConfirmPassword').value;
+            
+            const btn = document.getElementById('studentSignupBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span>';
+            btn.disabled = true;
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match!', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                return;
+            }
+            
+            if (students.find(s => s.id === id) || teachers.find(t => t.id === id)) {
+                showToast('ID already exists!', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                return;
+            }
+            
+            setTimeout(() => {
+                const newStudent = {
+                    id: id,
+                    name: name,
+                    email: email,
+                    course: course,
+                    year: year,
+                    password: password,
+                    attendance: [],
+                    createdAt: new Date().toISOString()
+                };
+                
+                students.push(newStudent);
+                saveData();
+                
+                tempStudentData = newStudent;
+                document.getElementById('signupQRId').textContent = id;
+                document.getElementById('signupQRName').textContent = name;
+                document.getElementById('signupQRCourse').textContent = course;
+                document.getElementById('signupQRYear').textContent = year;
+                
+                const qrContainer = document.getElementById('signupQRCode');
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: id,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('studentQRDisplayModal').classList.remove('hidden');
+                
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        // Teacher Auth Functions
+        function showTeacherAuth() {
+            hideAll();
+            document.getElementById('teacherAuthPage').classList.remove('hidden');
+            switchTeacherTab('login');
+        }
+
+        function switchTeacherTab(tab) {
+            const loginForm = document.getElementById('teacherLoginForm');
+            const signupForm = document.getElementById('teacherSignupForm');
+            const loginTab = document.getElementById('teacherLoginTab');
+            const signupTab = document.getElementById('teacherSignupTab');
+            
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                loginTab.classList.remove('active');
+                signupTab.classList.add('active');
+            }
+        }
+
+        function handleTeacherLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('teacherLoginId').value;
+            const password = document.getElementById('teacherLoginPassword').value;
+            
+            const btn = document.getElementById('teacherLoginBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span>';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const teacher = teachers.find(t => t.id === id && t.password === password);
+                
+                if (teacher) {
+                    currentUser = teacher;
+                    currentRole = 'teacher';
+                    
+                    if (document.getElementById('teacherRememberMe').checked) {
+                        localStorage.setItem('edutrack_remember_teacher', id);
+                    }
+                    
+                    showAdminDashboard();
+                    showToast('Welcome back, ' + teacher.name + '!', 'success');
+                } else {
+                    showToast('Invalid ID or password!', 'error');
+                    btn.classList.add('shake');
+                    setTimeout(() => btn.classList.remove('shake'), 500);
+                }
+                
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }, 800);
+        }
+
+        function handleTeacherSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('teacherSignupName').value;
+            const id = document.getElementById('teacherSignupId').value;
+            const email = document.getElementById('teacherSignupEmail').value;
+            const subject = document.getElementById('teacherSignupSubject').value;
+            const password = document.getElementById('teacherSignupPassword').value;
+            const confirmPassword = document.getElementById('teacherSignupConfirmPassword').value;
+            
+            const btn = document.getElementById('teacherSignupBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span>';
+            btn.disabled = true;
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match!', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                return;
+            }
+            
+            if (teachers.find(t => t.id === id) || students.find(s => s.id === id)) {
+                showToast('ID already exists!', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                return;
+            }
+            
+            setTimeout(() => {
+                const newTeacher = {
+                    id: id,
+                    name: name,
+                    email: email,
+                    subject: subject,
+                    password: password,
+                    createdAt: new Date().toISOString()
+                };
+                
+                teachers.push(newTeacher);
+                saveData();
+                
+                currentUser = newTeacher;
+                currentRole = 'teacher';
+                showAdminDashboard();
+                showToast('Account created! Welcome, ' + name + '!', 'success');
+                
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        // Forgot Password
+        function showForgotPassword(type) {
+            document.getElementById('forgotPasswordModal').classList.remove('hidden');
+        }
+
+        function closeForgotPassword() {
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const id = document.getElementById('forgotId').value;
+            
+            const student = students.find(s => s.id === id);
+            const teacher = teachers.find(t => t.id === id);
+            
+            if (student || teacher) {
+                showToast('Password reset link sent to your email!', 'success');
+                closeForgotPassword();
+            } else {
+                showToast('ID not found!', 'error');
+            }
+        }
+
+        // QR Code Functions
+        function downloadSignupQR() {
+            const canvas = document.querySelector('#signupQRCode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `Student_QR_${tempStudentData.id}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                showToast('QR Code downloaded!', 'success');
+            }
+        }
+
+        function printSignupQR() {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            const canvas = document.querySelector('#signupQRCode canvas');
+            const imgData = canvas.toDataURL();
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Student ID - ${tempStudentData.name}</title>
+                    <style>
+                        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial; background: #f3f4f6; }
+                        .card { background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+                        .header { color: #4f46e5; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+                        .info { margin: 20px 0; text-align: left; }
+                        .info p { margin: 10px 0; color: #374151; }
+                        .qr { margin: 20px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="header">EduTrack Student ID</div>
+                        <div class="info">
+                            <p><strong>Name:</strong> ${tempStudentData.name}</p>
+                            <p><strong>ID:</strong> ${tempStudentData.id}</p>
+                            <p><strong>Course:</strong> ${tempStudentData.course}</p>
+                            <p><strong>Year:</strong> ${tempStudentData.year}</p>
+                        </div>
+                        <div class="qr">
+                            <img src="${imgData}" style="max-width: 200px;">
+                        </div>
+                        <p style="color: #6b7280; font-size: 12px;">Scan for attendance</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function closeSignupQR() {
+            document.getElementById('studentQRDisplayModal').classList.add('hidden');
+            currentUser = tempStudentData;
+            currentRole = 'student';
+            showStudentDashboard();
+        }
+
+        // Teacher QR Upload for Attendance
+        function handleTeacherQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const subject = document.getElementById('attendanceSubject').value;
+            if (!subject) {
+                showToast('Please select a subject first!', 'error');
+                document.getElementById('attendanceSubject').focus();
+                document.getElementById('attendanceSubject').classList.add('shake');
+                setTimeout(() => document.getElementById('attendanceSubject').classList.remove('shake'), 500);
+                return;
+            }
+
+            const uploadArea = document.getElementById('teacherUploadArea');
+            const uploadPreview = document.getElementById('teacherUploadPreview');
+            const uploadedImage = document.getElementById('teacherUploadedImage');
+            const uploadStatus = document.getElementById('teacherUploadStatus');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImage.src = e.target.result;
+                uploadPreview.classList.remove('hidden');
+                uploadStatus.innerHTML = '<span class="loader mr-2"></span>Scanning QR code...';
+                
+                scanTeacherQRFromImage(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function scanTeacherQRFromImage(file) {
+            const uploadStatus = document.getElementById('teacherUploadStatus');
+            
+            let tempDiv = document.getElementById('tempTeacherScannerDiv');
+            if (!tempDiv) {
+                tempDiv = document.createElement('div');
+                tempDiv.id = 'tempTeacherScannerDiv';
+                tempDiv.style.display = 'none';
+                document.body.appendChild(tempDiv);
+            }
+
+            const tempScanner = new Html5Qrcode("tempTeacherScannerDiv");
+            
+            tempScanner.scanFile(file, true)
+                .then(decodedText => {
+                    processTeacherUploadedQR(decodedText);
+                })
+                .catch(err => {
+                    console.error('QR Scan error:', err);
+                    uploadStatus.innerHTML = '<span class="text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Could not detect QR code. Please try a clearer image.</span>';
+                    showToast('Could not detect QR code in image', 'error');
+                });
+        }
+
+        function processTeacherUploadedQR(decodedText) {
+            const uploadStatus = document.getElementById('teacherUploadStatus');
+            const subject = document.getElementById('attendanceSubject').value;
+            
+            const student = students.find(s => s.id === decodedText);
+            
+            if (!student) {
+                uploadStatus.innerHTML = '<span class="text-red-500"><i class="fas fa-times-circle mr-2"></i>Student not found. Invalid QR code.</span>';
+                showToast('Student not found! Invalid QR code.', 'error');
+                return;
+            }
+
+            lastScannedStudent = student;
+            document.getElementById('adminScannedName').textContent = student.name;
+            document.getElementById('adminScannedId').textContent = student.id;
+            document.getElementById('adminScanResult').classList.remove('hidden');
+            
+            uploadStatus.innerHTML = `<span class="text-green-500"><i class="fas fa-check-circle mr-2"></i>QR detected: ${student.name}</span>`;
+            showToast(`QR detected: ${student.name}. Select attendance status.`, 'success');
+        }
+
+        // Drag and drop support for teacher QR upload
+        const teacherUploadArea = document.getElementById('teacherUploadArea');
+        if (teacherUploadArea) {
+            teacherUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                teacherUploadArea.classList.add('dragover');
+            });
+
+            teacherUploadArea.addEventListener('dragleave', () => {
+                teacherUploadArea.classList.remove('dragover');
+            });
+
+            teacherUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                teacherUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById('teacherQRFileInput');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(files[0]);
+                    fileInput.files = dataTransfer.files;
+                    handleTeacherQRUpload({ target: fileInput });
+                }
+            });
+        }
+
+        // Student Dashboard
+        function showStudentDashboard() {
+            hideAll();
+            document.getElementById('studentDashboard').classList.remove('hidden');
+            
+            document.getElementById('studentCourseBadge').textContent = currentUser.course;
+            document.getElementById('dashStudentName').textContent = currentUser.name;
+            document.getElementById('dashStudentId').textContent = currentUser.id;
+            document.getElementById('dashStudentCourse').textContent = currentUser.course;
+            document.getElementById('dashStudentYear').textContent = currentUser.year;
+            document.getElementById('dashStudentEmail').textContent = currentUser.email;
+            
+            updateStudentStats();
+            
+            const qrContainer = document.getElementById('dashQRCode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: currentUser.id,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            populateStudentAttendance();
+        }
+
+        function updateStudentStats() {
+            const present = currentUser.attendance.filter(a => a.status === 'Present').length;
+            const absent = currentUser.attendance.filter(a => a.status === 'Absent').length;
+            const total = present + absent;
+            const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+            
+            document.getElementById('dashPresent').textContent = present;
+            document.getElementById('dashAbsent').textContent = absent;
+            document.getElementById('dashAttendanceRate').textContent = rate + '%';
+        }
+
+        function populateStudentAttendance() {
+            const tbody = document.getElementById('studentAttendanceTable');
+            const noMsg = document.getElementById('noStudentAttendance');
+            tbody.innerHTML = '';
+            
+            if (currentUser.attendance.length === 0) {
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            
+            noMsg.classList.add('hidden');
+            
+            const sorted = [...currentUser.attendance].sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + b.time));
+            
+            sorted.forEach(record => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-800">${record.date}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${record.subject || 'General'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-800' : record.status === 'Late' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${record.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${record.time}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function showMyQR() {
+            const modal = document.getElementById('myQRModal');
+            document.getElementById('modalQRId').textContent = currentUser.id;
+            
+            const qrContainer = document.getElementById('modalQRCode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: currentUser.id,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeMyQR() {
+            document.getElementById('myQRModal').classList.add('hidden');
+        }
+
+        function downloadMyQR() {
+            const canvas = document.querySelector('#dashQRCode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `My_QR_${currentUser.id}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                showToast('QR Code downloaded!', 'success');
+            }
+        }
+
+        function downloadModalQR() {
+            const canvas = document.querySelector('#modalQRCode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `My_QR_${currentUser.id}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                showToast('QR Code downloaded!', 'success');
+            }
+        }
+
+        // Admin Dashboard
+        function showAdminDashboard() {
+            hideAll();
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            document.getElementById('adminName').textContent = currentUser.name;
+            
+            updateAdminStats();
+            populateCourseFilters();
+            showAdminSection('dashboard');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        function showAdminSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`admin${section.charAt(0).toUpperCase() + section.slice(1)}Section`).classList.remove('hidden');
+            
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                if (btn.dataset.section === section) {
+                    btn.classList.add('bg-gray-700');
+                } else {
+                    btn.classList.remove('bg-gray-700');
+                }
+            });
+
+            if (section === 'students') {
+                populateAdminStudents();
+            } else if (section === 'attendance') {
+                populateManualAttendance();
+            } else if (section === 'records') {
+                populateRecords();
+            } else if (section === 'dashboard') {
+                updateAdminStats();
+                populateRecentActivity();
+            }
+        }
+
+        function updateAdminStats() {
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalCourses').textContent = new Set(students.map(s => s.course)).size;
+            
+            const today = new Date().toISOString().split('T')[0];
+            let todayPresent = 0;
+            let todayAbsent = 0;
+            
+            students.forEach(s => {
+                const todayRecord = s.attendance.find(a => a.date === today);
+                if (todayRecord) {
+                    if (todayRecord.status === 'Present') todayPresent++;
+                    else if (todayRecord.status === 'Absent') todayAbsent++;
+                }
+            });
+            
+            document.getElementById('todayPresent').textContent = todayPresent;
+            document.getElementById('todayAbsent').textContent = todayAbsent;
+        }
+
+        function populateRecentActivity() {
+            const tbody = document.getElementById('recentActivityTable');
+            tbody.innerHTML = '';
+            
+            let allRecords = [];
+            students.forEach(s => {
+                s.attendance.forEach(a => {
+                    allRecords.push({
+                        ...a,
+                        studentName: s.name,
+                        studentCourse: s.course
+                    });
+                });
+            });
+            
+            allRecords.sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+            
+            allRecords.slice(0, 10).forEach(record => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full student-avatar text-xs flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="font-medium text-gray-800">${record.studentName}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${record.studentCourse}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${record.subject || 'General'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-800' : record.status === 'Late' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${record.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            if (allRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">No recent activity</td></tr>';
+            }
+        }
+
+        function populateAdminStudents() {
+            const tbody = document.getElementById('adminStudentsTable');
+            tbody.innerHTML = '';
+            
+            const search = document.getElementById('adminSearchStudent')?.value.toLowerCase() || '';
+            const filterCourse = document.getElementById('filterCourse')?.value || '';
+            
+            let filtered = students.filter(s => {
+                const matchesSearch = s.name.toLowerCase().includes(search) || s.id.toLowerCase().includes(search);
+                const matchesCourse = !filterCourse || s.course === filterCourse;
+                return matchesSearch && matchesCourse;
+            });
+            
+            filtered.forEach(student => {
+                const present = student.attendance.filter(a => a.status === 'Present').length;
+                const absent = student.attendance.filter(a => a.status === 'Absent').length;
+                const total = present + absent;
+                const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full student-avatar flex items-center justify-center flex-shrink-0 shadow-md">
+                                <i class="fas fa-user-graduate text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">${student.name}</p>
+                                <p class="text-xs text-gray-500">${student.id}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-sm text-gray-800">${student.course}</p>
+                        <p class="text-xs text-gray-500">${student.year}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2.5 rounded-full" style="width: ${rate}%"></div>
+                            </div>
+                            <span class="text-xs font-bold ${rate >= 80 ? 'text-emerald-600' : rate >= 60 ? 'text-yellow-600' : 'text-red-600'}">${rate}%</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${present} present, ${absent} absent</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button onclick="viewStudentAdmin('${student.id}')" class="text-emerald-600 hover:text-emerald-800 p-2 hover:bg-emerald-50 rounded-xl transition-all mr-1" title="View">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="showEditStudentModal('${student.id}')" class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-xl transition-all mr-1" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-xl transition-all" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">No students found</td></tr>';
+            }
+        }
+
+        function filterAdminStudents() {
+            populateAdminStudents();
+        }
+
+        function populateCourseFilters() {
+            const coursesList = [...new Set(students.map(s => s.course))];
+            const filterSelect = document.getElementById('filterCourse');
+            const recordSelect = document.getElementById('recordCourse');
+            
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">All Courses</option>';
+                coursesList.forEach(c => {
+                    filterSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+            }
+            
+            if (recordSelect) {
+                recordSelect.innerHTML = '<option value="">All Courses</option>';
+                coursesList.forEach(c => {
+                    recordSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+            }
+        }
+
+        // Edit Student Functions
+        function showEditStudentModal(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            document.getElementById('editOriginalId').value = studentId;
+            document.getElementById('editName').value = student.name;
+            document.getElementById('editId').value = student.id;
+            document.getElementById('editEmail').value = student.email;
+            document.getElementById('editCourse').value = student.course;
+            document.getElementById('editYear').value = student.year;
+
+            document.getElementById('editStudentModal').classList.remove('hidden');
+        }
+
+        function closeEditStudent() {
+            document.getElementById('editStudentModal').classList.add('hidden');
+            document.getElementById('editStudentForm').reset();
+        }
+
+        function handleEditStudent(e) {
+            e.preventDefault();
+            
+            const originalId = document.getElementById('editOriginalId').value;
+            const newName = document.getElementById('editName').value;
+            const newId = document.getElementById('editId').value;
+            const newEmail = document.getElementById('editEmail').value;
+            const newCourse = document.getElementById('editCourse').value;
+            const newYear = document.getElementById('editYear').value;
+
+            if (newId !== originalId) {
+                const existingStudent = students.find(s => s.id === newId);
+                if (existingStudent) {
+                    showToast('Student ID already exists!', 'error');
+                    return;
+                }
+            }
+
+            const studentIndex = students.findIndex(s => s.id === originalId);
+            if (studentIndex === -1) {
+                showToast('Student not found!', 'error');
+                return;
+            }
+
+            students[studentIndex].name = newName;
+            students[studentIndex].id = newId;
+            students[studentIndex].email = newEmail;
+            students[studentIndex].course = newCourse;
+            students[studentIndex].year = newYear;
+
+            saveData();
+            closeEditStudent();
+            populateAdminStudents();
+            populateCourseFilters();
+            showToast('Student information updated successfully!', 'success');
+        }
+
+        function showAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+        }
+
+        function closeAddStudent() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+            document.getElementById('addStudentForm').reset();
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('addName').value;
+            const id = document.getElementById('addId').value;
+            const email = document.getElementById('addEmail').value;
+            const course = document.getElementById('addCourse').value;
+            const year = document.getElementById('addYear').value;
+            const password = document.getElementById('addPassword').value;
+            
+            if (students.find(s => s.id === id)) {
+                showToast('Student ID already exists!', 'error');
+                return;
+            }
+            
+            const newStudent = {
+                id: id,
+                name: name,
+                email: email,
+                course: course,
+                year: year,
+                password: password,
+                attendance: [],
+                createdAt: new Date().toISOString()
+            };
+            
+            students.push(newStudent);
+            saveData();
+            
+            tempStudentData = newStudent;
+            
+            closeAddStudent();
+            showToast('Student added successfully!', 'success');
+            populateAdminStudents();
+            updateAdminStats();
+            populateCourseFilters();
+            
+            setTimeout(() => {
+                document.getElementById('viewAdminStudentName').textContent = name;
+                document.getElementById('viewAdminStudentId').textContent = id;
+                document.getElementById('viewAdminStudentCourse').textContent = course;
+                document.getElementById('viewAdminStudentYear').textContent = year;
+                document.getElementById('viewAdminStudentEmail').textContent = email;
+                document.getElementById('viewAdminStudentRate').textContent = '0%';
+                
+                const qrContainer = document.getElementById('viewAdminStudentQR');
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: id,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('viewStudentAdminModal').classList.remove('hidden');
+            }, 300);
+        }
+
+        function viewStudentAdmin(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const present = student.attendance.filter(a => a.status === 'Present').length;
+            const absent = student.attendance.filter(a => a.status === 'Absent').length;
+            const total = present + absent;
+            const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+            
+            document.getElementById('viewAdminStudentName').textContent = student.name;
+            document.getElementById('viewAdminStudentId').textContent = student.id;
+            document.getElementById('viewAdminStudentCourse').textContent = student.course;
+            document.getElementById('viewAdminStudentYear').textContent = student.year;
+            document.getElementById('viewAdminStudentEmail').textContent = student.email;
+            document.getElementById('viewAdminStudentRate').textContent = rate + '%';
+            
+            const qrContainer = document.getElementById('viewAdminStudentQR');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: student.id,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            tempStudentData = student;
+            document.getElementById('viewStudentAdminModal').classList.remove('hidden');
+        }
+
+        function closeViewStudentAdmin() {
+            document.getElementById('viewStudentAdminModal').classList.add('hidden');
+        }
+
+        function deleteStudent(studentId) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+            
+            students = students.filter(s => s.id !== studentId);
+            saveData();
+            populateAdminStudents();
+            updateAdminStats();
+            populateCourseFilters();
+            showToast('Student deleted!', 'success');
+        }
+
+        function printStudentID() {
+            const student = tempStudentData || students.find(s => s.id === document.getElementById('viewAdminStudentId').textContent);
+            if (!student) return;
+            
+            const printWindow = window.open('', '', 'height=600,width=800');
+            const qrCanvas = document.querySelector('#viewAdminStudentQR canvas');
+            const qrData = qrCanvas ? qrCanvas.toDataURL() : '';
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Student ID - ${student.name}</title>
+                    <style>
+                        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+                        .id-card { background: white; width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+                        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; }
+                        .header h2 { margin: 0; font-size: 24px; }
+                        .body { padding: 30px; text-align: center; }
+                        .avatar { width: 100px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; }
+                        .name { font-size: 22px; font-weight: bold; color: #1f2937; margin-bottom: 5px; }
+                        .id { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+                        .info { text-align: left; margin: 20px 0; }
+                        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+                        .qr-section { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e5e7eb; }
+                        .footer { background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; }
+                    </style>
+                </head>
+                <body>
+                    <div class="id-card">
+                        <div class="header">
+                            <h2>EduTrack Pro</h2>
+                            <p>Student ID</p>
+                        </div>
+                        <div class="body">
+                            <div class="avatar"><i class="fas fa-user-graduate"></i></div>
+                            <div class="name">${student.name}</div>
+                            <div class="id">${student.id}</div>
+                            <div class="info">
+                                <div class="info-row"><span>Course:</span><span>${student.course}</span></div>
+                                <div class="info-row"><span>Year:</span><span>${student.year}</span></div>
+                            </div>
+                            <div class="qr-section">
+                                ${qrData ? `<img src="${qrData}" style="max-width: 150px;">` : ''}
+                                <p style="font-size: 12px; color: #6b7280; margin-top: 10px;">Scan for Attendance</p>
+                            </div>
+                        </div>
+                        <div class="footer">EduTrack Pro Student Identification</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function exportStudentList() {
+            let csv = 'ID,Name,Email,Course,Year,Attendance Rate,Present,Absent\n';
+            
+            students.forEach(s => {
+                const present = s.attendance.filter(a => a.status === 'Present').length;
+                const absent = s.attendance.filter(a => a.status === 'Absent').length;
+                const total = present + absent;
+                const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+                csv += `${s.id},${s.name},${s.email},${s.course},${s.year},${rate}%,${present},${absent}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Students_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showToast('Student list exported!', 'success');
+        }
+
+        // Attendance Section
+        function populateManualAttendance() {
+            const container = document.getElementById('manualAttendanceList');
+            container.innerHTML = '';
+            
+            const today = new Date().toISOString().split('T')[0];
+            const subject = document.getElementById('attendanceSubject')?.value || '';
+            
+            students.forEach(student => {
+                const todayRecord = student.attendance.find(a => a.date === today && (!subject || a.subject === subject));
+                const status = todayRecord ? todayRecord.status : null;
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full student-avatar flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fas fa-user-graduate text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800 text-sm">${student.name}</p>
+                            <p class="text-xs text-gray-500">${student.id}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        ${status ? 
+                            `<span class="px-3 py-1.5 rounded-full text-xs font-semibold ${status === 'Present' ? 'bg-green-100 text-green-800' : status === 'Late' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">${status}</span>` :
+                            `<button onclick="quickMark('${student.id}', 'Present')" class="w-9 h-9 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full hover:shadow-lg transition-all flex items-center justify-center hover:scale-110" title="Present"><i class="fas fa-check text-xs"></i></button>
+                             <button onclick="quickMark('${student.id}', 'Late')" class="w-9 h-9 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-full hover:shadow-lg transition-all flex items-center justify-center hover:scale-110" title="Late"><i class="fas fa-clock text-xs"></i></button>
+                             <button onclick="quickMark('${student.id}', 'Absent')" class="w-9 h-9 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full hover:shadow-lg transition-all flex items-center justify-center hover:scale-110" title="Absent"><i class="fas fa-times text-xs"></i></button>`
+                        }
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function quickMark(studentId, status) {
+            const subject = document.getElementById('attendanceSubject').value;
+            if (!subject) {
+                showToast('Please select a subject first!', 'error');
+                document.getElementById('attendanceSubject').focus();
+                return;
+            }
+            
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            const existingIndex = student.attendance.findIndex(a => a.date === today && a.subject === subject);
+            if (existingIndex >= 0) {
+                student.attendance[existingIndex].status = status;
+                student.attendance[existingIndex].time = time;
+                student.attendance[existingIndex].markedBy = currentUser.name;
+            } else {
+                student.attendance.push({
+                    date: today,
+                    time: time,
+                    subject: subject,
+                    status: status,
+                    markedBy: currentUser.name
+                });
+            }
+            
+            saveData();
+            populateManualAttendance();
+            updateAdminStats();
+            
+            showToast(`${student.name} marked as ${status}!`, 'success');
+        }
+
+        // QR Scanner for Admin
+        function startAdminScanner() {
+            const subject = document.getElementById('attendanceSubject').value;
+            if (!subject) {
+                showToast('Please select a subject first!', 'error');
+                document.getElementById('attendanceSubject').focus();
+                return;
+            }
+            
+            document.getElementById('adminScannerPlaceholder').style.display = 'none';
+            document.getElementById('adminScannerLine').style.display = 'block';
+            
+            adminScanner = new Html5Qrcode("adminReader");
+            
+            adminScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onAdminScanSuccess,
+                onAdminScanFailure
+            ).catch(err => {
+                showToast('Error accessing camera', 'error');
+                console.error(err);
+            });
+        }
+
+        function onAdminScanSuccess(decodedText, decodedResult) {
+            const student = students.find(s => s.id === decodedText);
+            
+            if (student) {
+                lastScannedStudent = student;
+                
+                if (adminScanner) adminScanner.pause();
+                
+                document.getElementById('adminScannedName').textContent = student.name;
+                document.getElementById('adminScannedId').textContent = student.id;
+                
+                document.getElementById('adminScanResult').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    if (adminScanner) adminScanner.resume();
+                }, 3000);
+            } else {
+                showToast('Invalid QR Code!', 'error');
+            }
+        }
+
+        function onAdminScanFailure(error) {
+            // Silent fail
+        }
+
+        function markScannedStatus(status) {
+            if (!lastScannedStudent) return;
+            
+            const subject = document.getElementById('attendanceSubject').value;
+            const today = new Date().toISOString().split('T')[0];
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            const existingIndex = lastScannedStudent.attendance.findIndex(a => a.date === today && a.subject === subject);
+            if (existingIndex >= 0) {
+                lastScannedStudent.attendance[existingIndex].status = status;
+                lastScannedStudent.attendance[existingIndex].time = time;
+                lastScannedStudent.attendance[existingIndex].markedBy = currentUser.name;
+            } else {
+                lastScannedStudent.attendance.push({
+                    date: today,
+                    time: time,
+                    subject: subject,
+                    status: status,
+                    markedBy: currentUser.name
+                });
+            }
+            
+            saveData();
+            
+            document.getElementById('adminScanResult').classList.add('hidden');
+            
+            populateManualAttendance();
+            updateAdminStats();
+            
+            showToast(`${lastScannedStudent.name} marked as ${status}!`, 'success');
+            lastScannedStudent = null;
+        }
+
+        // Records Section
+        function populateRecords() {
+            const tbody = document.getElementById('recordsTable');
+            tbody.innerHTML = '';
+            
+            const filterDate = document.getElementById('recordDate')?.value || '';
+            const filterCourse = document.getElementById('recordCourse')?.value || '';
+            
+            let allRecords = [];
+            students.forEach(s => {
+                s.attendance.forEach(a => {
+                    allRecords.push({
+                        ...a,
+                        studentName: s.name,
+                        studentCourse: s.course
+                    });
+                });
+            });
+            
+            if (filterDate) {
+                allRecords = allRecords.filter(r => r.date === filterDate);
+            }
+            if (filterCourse) {
+                allRecords = allRecords.filter(r => r.studentCourse === filterCourse);
+            }
+            
+            allRecords.sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+            
+            allRecords.forEach(record => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm text-gray-800">${record.date}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full student-avatar text-xs flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800 text-sm">${record.studentName}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${record.subject || 'General'}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1.5 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-800' : record.status === 'Late' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                            ${record.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            if (allRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">No records found</td></tr>';
+            }
+        }
+
+        function filterRecords() {
+            populateRecords();
+        }
+
+        function exportRecords() {
+            const filterDate = document.getElementById('recordDate')?.value || 'all';
+            
+            let csv = 'Date,Student ID,Name,Course,Subject,Status,Time,Marked By\n';
+            
+            students.forEach(s => {
+                s.attendance.forEach(a => {
+                    if (!filterDate || filterDate === 'all' || a.date === filterDate) {
+                        csv += `${a.date},${s.id},${s.name},${s.course},${a.subject || 'General'},${a.status},${a.time},${a.markedBy || 'System'}\n`;
+                    }
+                });
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Attendance_Records_${filterDate}.csv`;
+            link.click();
+            
+            showToast('Records exported!', 'success');
+        }
+
+        // FIXED LOGOUT FUNCTION
+        function handleLogout() {
+            // Stop scanner if active
+            if (adminScanner) {
+                adminScanner.stop().then(() => {
+                    adminScanner = null;
+                    performLogout();
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                    adminScanner = null;
+                    performLogout();
+                });
+            } else {
+                performLogout();
+            }
+        }
+
+        function performLogout() {
+            // Clear current user data
+            currentUser = null;
+            currentRole = null;
+            tempStudentData = null;
+            lastScannedStudent = null;
+            
+            // Hide sidebar on mobile
+            const sidebar = document.getElementById('adminSidebar');
+            if (sidebar) {
+                sidebar.classList.add('-translate-x-full');
+            }
+            
+            // Reset forms
+            document.getElementById('studentLoginForm')?.reset();
+            document.getElementById('teacherLoginForm')?.reset();
+            
+            // Show landing page
+            showLanding();
+            
+            // Show success message
+            showToast('Logged out successfully!', 'success');
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const iconContainer = document.getElementById('toastIconContainer');
+            const icon = document.getElementById('toastIcon');
+            const title = document.getElementById('toastTitle');
+            const msg = document.getElementById('toastMessage');
+            
+            msg.textContent = message;
+            
+            if (type === 'success') {
+                iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-green-500/20 flex-shrink-0';
+                icon.className = 'fas fa-check-circle text-green-400 text-xl';
+                title.textContent = 'Success!';
+                title.className = 'font-bold text-sm text-green-400';
+            } else if (type === 'error') {
+                iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-red-500/20 flex-shrink-0';
+                icon.className = 'fas fa-exclamation-circle text-red-400 text-xl';
+                title.textContent = 'Error!';
+                title.className = 'font-bold text-sm text-red-400';
+            } else if (type === 'warning') {
+                iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-yellow-500/20 flex-shrink-0';
+                icon.className = 'fas fa-info-circle text-yellow-400 text-xl';
+                title.textContent = 'Warning!';
+                title.className = 'font-bold text-sm text-yellow-400';
+            }
+            
+            toast.classList.remove('hidden', 'translate-y-20');
+            toast.classList.add('translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20');
+                toast.classList.remove('translate-y-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 4000);
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            const modals = [
+                'forgotPasswordModal', 'studentQRDisplayModal', 'myQRModal', 
+                'addStudentModal', 'editStudentModal', 'viewStudentAdminModal'
+            ];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        };
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('forgotPasswordModal').classList.add('hidden');
+                document.getElementById('studentQRDisplayModal').classList.add('hidden');
+                document.getElementById('myQRModal').classList.add('hidden');
+                document.getElementById('addStudentModal').classList.add('hidden');
+                document.getElementById('editStudentModal').classList.add('hidden');
+                document.getElementById('viewStudentAdminModal').classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showLanding();
+            
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('recordDate');
+            if (dateInput) dateInput.value = today;
+            
+            // Check for remembered login
+            const rememberedStudent = localStorage.getItem('edutrack_remember_student');
+            const rememberedTeacher = localStorage.getItem('edutrack_remember_teacher');
+            
+            if (rememberedStudent) {
+                document.getElementById('studentLoginId').value = rememberedStudent;
+                document.getElementById('studentRememberMe').checked = true;
+            }
+            if (rememberedTeacher) {
+                document.getElementById('teacherLoginId').value = rememberedTeacher;
+                document.getElementById('teacherRememberMe').checked = true;
+            }
+        });
+
+        // Prevent accidental leave
+        window.addEventListener('beforeunload', function(e) {
+            if (adminScanner) {
+                e.preventDefault();
+                e.returnValue = 'Scanner is active. Leave anyway?';
+                return e.returnValue;
+            }
+        });
+    </script>
+</body>
+</html>
